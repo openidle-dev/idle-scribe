@@ -30,7 +30,7 @@ flowchart LR
         API[REST API] --> JOB[(SQLite + disk)]
         API --> W[Async worker]
         W --> N[1. Normalize<br/>ffmpeg → 16k mono wav]
-        N --> T[2. Transcribe<br/>faster-whisper | OpenAI]
+        N --> T["2. Transcribe<br/>faster-whisper / OpenAI"]
         N --> D[3. Diarize<br/>pyannote CPU]
         T --> M[4. Merge<br/>speaker per word]
         D --> M --> JOB
