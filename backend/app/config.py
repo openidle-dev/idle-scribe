@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_language: str | None = None
 
+    # ElevenLabs Scribe (cloud, strong on Afrikaans). Key falls back to
+    # ELEVENLABS_API_KEY env var.
+    elevenlabs_model: str = "scribe_v1"
+    elevenlabs_api_key: str | None = None
+
     # Diarization (pyannote, CPU). Optional and degrades gracefully — a job still
     # completes (transcribe-only) if the model can't load. hf_token is optional;
     # None uses the token cached by `huggingface-cli login`.

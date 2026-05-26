@@ -5,7 +5,7 @@ import os
 from ..config import Settings
 from .base import TranscriptionEngine
 
-KNOWN_ENGINES = ("faster_whisper", "openai")
+KNOWN_ENGINES = ("faster_whisper", "openai", "elevenlabs")
 
 
 def build_named_engine(settings: Settings, name: str) -> TranscriptionEngine:
@@ -28,6 +28,14 @@ def build_named_engine(settings: Settings, name: str) -> TranscriptionEngine:
             api_key=settings.openai_api_key,
             language=settings.openai_language,
         )
+    if name == "elevenlabs":
+        from .elevenlabs_engine import ElevenLabsEngine
+
+        return ElevenLabsEngine(
+            model=settings.elevenlabs_model,
+            api_key=settings.elevenlabs_api_key,
+            language=settings.whisper_language,
+        )
     raise ValueError(f"Unknown transcription engine: {name!r}")
 
 
@@ -40,6 +48,8 @@ def available_engines(settings: Settings) -> list[str]:
     engines = ["faster_whisper"]
     if settings.openai_api_key or os.environ.get("OPENAI_API_KEY"):
         engines.append("openai")
+    if settings.elevenlabs_api_key or os.environ.get("ELEVENLABS_API_KEY"):
+        engines.append("elevenlabs")
     return engines
 
 
