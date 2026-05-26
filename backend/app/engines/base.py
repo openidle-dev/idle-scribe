@@ -47,6 +47,9 @@ class TranscriptionResult:
     language_probability: float | None
     duration: float | None
     segments: list[Segment] = field(default_factory=list)
+    # True when the engine already assigned speakers (e.g. ElevenLabs), so the
+    # pipeline can skip the separate diarization stage.
+    diarized: bool = False
 
     def to_dict(self) -> dict:
         return {

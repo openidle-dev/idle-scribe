@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 
 from .base import Segment, TranscriptionResult, Word
@@ -11,13 +12,21 @@ logger = logging.getLogger("idle_scribe.engine.elevenlabs")
 _PAUSE_GAP = 1.0
 
 
+def _norm_speaker(speaker_id: str | None) -> str | None:
+    """Normalise ElevenLabs' "speaker_0" to the "SPEAKER_00" form pyannote uses,
+    so labels look consistent regardless of engine."""
+    if not speaker_id:
+        return None
+    m = re.search(r"(\d+)$", speaker_id)
+    return f"SPEAKER_{int(m.group(1)):02d}" if m else speaker_id
+
+
 class ElevenLabsEngine:
     """ElevenLabs Scribe transcription (cloud, pay-as-you-go).
 
-    Strong multilingual accuracy including Afrikaans. Returns text + word
-    timestamps; speaker labels are layered on separately by the diarization
-    stage (consistent with the other engines), so we don't use Scribe's own
-    diarization here.
+    Strong multilingual accuracy including Afrikaans. Scribe also diarizes, so we
+    request its speaker labels and mark the result `diarized=True` — the pipeline
+    then skips the (CPU, slow) pyannote stage for this engine.
     """
 
     def __init__(
@@ -49,7 +58,7 @@ class ElevenLabsEngine:
                 file=fh,
                 language_code=(language or self._language) or None,
                 timestamps_granularity="word",
-                diarize=False,
+                diarize=True,
                 tag_audio_events=False,
             )
         return self._to_result(resp)
@@ -57,15 +66,29 @@ class ElevenLabsEngine:
     @staticmethod
     def _to_result(resp) -> TranscriptionResult:
         words = [
-            Word(start=w.start, end=w.end, word=w.text)
+            Word(
+                start=w.start,
+                end=w.end,
+                word=w.text,
+                speaker=_norm_speaker(getattr(w, "speaker_id", None)),
+            )
             for w in (resp.words or [])
             if getattr(w, "type", "word") == "word"
         ]
+        segments = _group_into_segments(words)
+        for seg in segments:
+            counts: dict[str, int] = {}
+            for wd in seg.words:
+                if wd.speaker:
+                    counts[wd.speaker] = counts.get(wd.speaker, 0) + 1
+            if counts:
+                seg.speaker = max(counts, key=counts.__getitem__)
         return TranscriptionResult(
             language=getattr(resp, "language_code", None),
             language_probability=getattr(resp, "language_probability", None),
             duration=getattr(resp, "audio_duration_secs", None),
-            segments=_group_into_segments(words),
+            segments=segments,
+            diarized=any(w.speaker for w in words),
         )
 
 
@@ -89,11 +112,11 @@ def _group_into_segments(words: list[Word]) -> list[Segment]:
 
     for i, w in enumerate(words):
         current.append(w)
+        nxt = words[i + 1] if i + 1 < len(words) else None
         ends_sentence = w.word.rstrip().endswith((".", "?", "!"))
-        gap_next = (
-            i + 1 < len(words) and (words[i + 1].start - w.end) > _PAUSE_GAP
-        )
-        if ends_sentence or gap_next:
+        gap_next = nxt is not None and (nxt.start - w.end) > _PAUSE_GAP
+        speaker_change = nxt is not None and nxt.speaker != w.speaker
+        if ends_sentence or gap_next or speaker_change:
             flush()
     flush()
     return segments

@@ -85,9 +85,11 @@ class JobWorker:
             engine = self._engines.get(job.engine)
             result = await asyncio.to_thread(engine.transcribe, wav, job.language)
 
+            # Skip pyannote when the engine already diarized (e.g. ElevenLabs):
+            # no point redoing speaker assignment, and it's the slow CPU stage.
             # Diarization is optional and must never fail the job: on any error we
             # log and ship a transcribe-only transcript (PLAN.md §6).
-            if self._diarizer is not None:
+            if self._diarizer is not None and not result.diarized:
                 try:
                     db.update_job(db_path, job_id, status=JobStatus.DIARIZING)
                     turns = await asyncio.to_thread(self._diarizer.diarize, wav)
