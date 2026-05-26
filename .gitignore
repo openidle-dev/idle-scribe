@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# idle-scribe runtime data (uploads, normalized audio, sqlite db)
+backend/storage/
+
+# Models (converted CTranslate2 / fine-tunes live here, not in git)
+models/
+
+# Env / secrets
+.env
+*.env
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Playwright MCP artifacts (snapshots/logs from browser verification)
+.playwright-mcp/

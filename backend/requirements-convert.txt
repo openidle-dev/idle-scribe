@@ -1,0 +1,7 @@
+# One-time toolchain to merge a LoRA/PEFT Whisper fine-tune and convert it to
+# CTranslate2 for faster-whisper. Not a runtime dependency. CPU torch is enough
+# (merging weights needs no GPU). Install torch from the CPU index:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-convert.txt
+transformers>=4.44
+peft>=0.12

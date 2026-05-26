@@ -1,0 +1,128 @@
+:root {
+  --bg: #0f1115;
+  --card: #171a21;
+  --border: #2a2f3a;
+  --text: #e6e8eb;
+  --muted: #8b93a1;
+  --accent: #5b9dff;
+  --error: #ff6b6b;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.card h2 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+
+.row { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0; }
+
+button {
+  background: var(--accent);
+  color: #0b1020;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+select, input[type="file"], input.speaker, textarea {
+  background: #0f1218;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+}
+
+.muted { color: var(--muted); font-size: 0.85rem; }
+.error { color: var(--error); }
+
+.editor-head { display: flex; align-items: baseline; justify-content: space-between; }
+
+audio { width: 100%; margin: 0.5rem 0 1rem; }
+
+.segments { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.segment {
+  display: grid;
+  grid-template-columns: 5.5rem 9rem 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.segment .ts {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.8rem;
+}
+
+.segment .text { width: 100%; resize: vertical; line-height: 1.4; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.exports { color: var(--muted); font-size: 0.9rem; }
+.exports a {
+  color: var(--accent);
+  margin-left: 0.6rem;
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent);
+}
+
+.save-msg { color: var(--accent); margin-top: 0.75rem; }
+
+.status { display: flex; align-items: center; gap: 0.5rem; }
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

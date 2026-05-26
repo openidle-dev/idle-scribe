@@ -1,0 +1,12 @@
+# Speaker diarization stack. Runs on CPU (see PLAN.md §6 — keeps the GPU for
+# transcription and avoids the CTranslate2/PyTorch cuDNN clash on Windows).
+# Install torchaudio from the CPU index to match the existing CPU torch:
+#   pip install torchaudio --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-diarize.txt
+# pyannote.audio 4.x: required for modern torch/torchaudio (3.x references the
+# removed torchaudio.AudioMetaData). Its pipeline uses the gated
+# speaker-diarization-community-1 model (accept its terms once on HF). We load
+# audio via soundfile and pass an in-memory waveform, which sidesteps the
+# torchcodec native-DLL failure on this Windows setup.
+pyannote.audio>=4.0
+soundfile>=0.12

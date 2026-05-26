@@ -1,0 +1,4 @@
+# Tooling for the Afrikaans WER benchmark (dev/eval only, not a runtime dep).
+datasets>=3.0
+soundfile>=0.12
+jiwer>=3.0

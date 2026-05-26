@@ -1,0 +1,6 @@
+# Transcription/diarization stack (GPU). Install into the same venv as the base
+# API deps. faster-whisper uses CTranslate2 (not PyTorch); GPU support on Windows
+# needs the NVIDIA cuBLAS + cuDNN runtime libs, provided here as pip packages.
+faster-whisper>=1.1.0
+nvidia-cublas-cu12
+nvidia-cudnn-cu12
