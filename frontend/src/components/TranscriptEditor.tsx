@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { api, type Segment, type Transcript } from "../api";
+import { speakerColor } from "../speakerColor";
 
 const EXPORT_FORMATS = ["txt", "srt", "vtt", "json"];
 
@@ -27,8 +28,6 @@ export function TranscriptEditor({ jobId }: { jobId: string }) {
       .catch((e) => setError(String(e)));
   }, [jobId]);
 
-  // Count the speakers actually present in the (possibly edited) segments, not
-  // the original ASR speaker list — so relabeling SPEAKER_00 -> Alice updates it.
   const speakers = useMemo(() => {
     if (!transcript) return [] as string[];
     const set = new Set<string>();
@@ -36,15 +35,13 @@ export function TranscriptEditor({ jobId }: { jobId: string }) {
     return [...set].sort();
   }, [transcript]);
 
-  if (error) return <p className="error">{error}</p>;
-  if (!transcript) return <p>Loading transcript…</p>;
+  if (error) return <div className="card"><p className="error">{error}</p></div>;
+  if (!transcript) return <div className="card"><p className="muted">Loading transcript…</p></div>;
 
   const patchSegment = (i: number, patch: Partial<Segment>) => {
     setDirty(true);
     setTranscript((t) =>
-      t
-        ? { ...t, segments: t.segments.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) }
-        : t,
+      t ? { ...t, segments: t.segments.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) } : t,
     );
   };
 
@@ -73,38 +70,41 @@ export function TranscriptEditor({ jobId }: { jobId: string }) {
   return (
     <div className="card">
       <div className="editor-head">
-        <h2>Transcript</h2>
-        <span className="muted">
-          {transcript.language ?? "?"}
-          {transcript.duration ? ` · ${Math.round(transcript.duration)}s` : ""} ·{" "}
-          {speakers.length} speaker(s){dirty ? " · unsaved changes" : ""}
-        </span>
+        <div>
+          <p className="card-eyebrow">Transcript</p>
+          <h2 className="card-title" style={{ marginBottom: 0 }}>Review &amp; correct</h2>
+        </div>
+        <div className="editor-meta">
+          <span className="badge">{transcript.language ?? "?"}</span>
+          {transcript.duration ? <span className="badge">{Math.round(transcript.duration)}s</span> : null}
+          <span className="badge">{speakers.length} speaker(s)</span>
+          {dirty && <span className="badge dirty">unsaved</span>}
+        </div>
       </div>
 
-      <audio ref={audioRef} controls src={api.audioUrl(jobId)} data-testid="audio" />
+      <audio ref={audioRef} className="main" controls src={api.audioUrl(jobId)} data-testid="audio" />
 
       <datalist id="speakers">
-        {speakers.map((s) => (
-          <option key={s} value={s} />
-        ))}
+        {speakers.map((s) => <option key={s} value={s} />)}
       </datalist>
 
       <div className="segments">
         {transcript.segments.map((seg, i) => (
-          <div className="segment" key={i} data-testid={`segment-${i}`}>
-            <button className="ts" title="Play from here" onClick={() => play(seg.start)}>
+          <div className="seg" key={i} data-testid={`segment-${i}`}>
+            <button className="seg-time" title="Play from here" onClick={() => play(seg.start)}>
               ▶ {fmtTime(seg.start)}
             </button>
             <input
-              className="speaker"
+              className="seg-speaker"
               list="speakers"
               value={seg.speaker ?? ""}
               placeholder="speaker"
               data-testid={`speaker-${i}`}
+              style={{ "--chip": speakerColor(seg.speaker) } as CSSProperties}
               onChange={(e) => patchSegment(i, { speaker: e.target.value || null })}
             />
             <textarea
-              className="text"
+              className="seg-text"
               value={seg.text}
               rows={2}
               data-testid={`text-${i}`}
@@ -114,14 +114,14 @@ export function TranscriptEditor({ jobId }: { jobId: string }) {
         ))}
       </div>
 
-      <div className="actions">
-        <button data-testid="save-btn" disabled={saving || !dirty} onClick={save}>
+      <div className="toolbar">
+        <button className="btn btn-primary" data-testid="save-btn" disabled={saving || !dirty} onClick={save}>
           {saving ? "Saving…" : dirty ? "Save corrections" : "Saved"}
         </button>
         <span className="exports">
-          Export:
+          Export
           {EXPORT_FORMATS.map((f) => (
-            <a key={f} href={api.exportUrl(jobId, f)} data-testid={`export-${f}`}>
+            <a key={f} className="export-link" href={api.exportUrl(jobId, f)} data-testid={`export-${f}`}>
               {f}
             </a>
           ))}

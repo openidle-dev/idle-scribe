@@ -31,10 +31,12 @@ export default function App() {
 
   return (
     <div className="app">
-      <header>
-        <h1>idle-scribe</h1>
+      <header className="topbar">
+        <h1 className="brand-mark">
+          idle<span className="dot">·</span>scribe
+        </h1>
         {job && (
-          <button className="ghost" onClick={() => setJob(null)}>
+          <button className="btn btn-ghost" onClick={() => setJob(null)}>
             New upload
           </button>
         )}
@@ -44,19 +46,27 @@ export default function App() {
 
       {job && active && (
         <div className="card">
-          <h2>{job.original_filename}</h2>
-          <p className="status" data-testid="status">
-            <span className="spinner" /> {job.status}… <span className="muted">{elapsed}s</span>
-          </p>
+          <p className="card-eyebrow">Working</p>
+          <h2 className="card-title">{job.original_filename}</h2>
+          <div className="processing" data-testid="status">
+            <span className="eq" aria-hidden="true">
+              <span /><span /><span /><span /><span />
+            </span>
+            <span className="processing-label">
+              <b>{job.status}</b>…
+            </span>
+            <span className="processing-time">{elapsed}s</span>
+          </div>
         </div>
       )}
 
       {job && job.status === "failed" && (
         <div className="card">
-          <p className="error" data-testid="status">
-            Failed: {job.error}
-          </p>
-          <button onClick={() => setJob(null)}>Try again</button>
+          <p className="card-eyebrow">Failed</p>
+          <p className="error" data-testid="status">{job.error}</p>
+          <button className="btn" onClick={() => setJob(null)}>
+            Try again
+          </button>
         </div>
       )}
 
